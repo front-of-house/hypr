@@ -1,0 +1,30 @@
+{
+  "name": "@sstack/cookies",
+  "version": "0.0.1",
+  "description": "Cookie parsing utility for sstack.",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/estrattonbailey/sstack.git"
+  },
+  "author": "estrattonbailey",
+  "keywords": [
+    "serverless",
+    "middleware"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/estrattonbailey/sstack/issues"
+  },
+  "homepage": "https://github.com/estrattonbailey/sstack#readme",
+  "devDependencies": {
+    "ava": "^1.4.1"
+  },
+  "dependencies": {
+    "cookie": "^0.4.0",
+    "http-errors": "^1.7.3"
+  }
+}
