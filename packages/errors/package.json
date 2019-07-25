@@ -1,6 +1,6 @@
 {
   "name": "@sstack/errors",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "Error handling for sstack.",
   "main": "index.js",
   "scripts": {
