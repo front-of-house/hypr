@@ -92,6 +92,11 @@ function sstack (stack = [], error = []) {
 
       try {
         handler = await apply(handler, error)
+
+        if (typeof handler.response.body !== 'string') {
+          handler.response.body += ''
+        }
+
         return handler.response
       } catch (e) {
         return Object.assign({}, original.response, createResponseFromError(e))
