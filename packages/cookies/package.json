@@ -1,6 +1,6 @@
 {
   "name": "@sstack/cookies",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "description": "Cookie parsing utility for sstack.",
   "main": "index.js",
   "scripts": {
