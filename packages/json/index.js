@@ -1,4 +1,4 @@
-exports.parse = handler => {
+function parse (handler) {
   try {
     handler.event.body = JSON.parse(handler.event.body)
   } catch (e) {
@@ -6,10 +6,15 @@ exports.parse = handler => {
   }
 }
 
-exports.stringify = handler => {
+function stringify (handler) {
   try {
     handler.response.body = JSON.parse(handler.response.body)
   } catch (e) {
     throw createError(400, `The response body was malformed.`)
   }
+}
+
+module.exports = {
+  parse,
+  stringify
 }

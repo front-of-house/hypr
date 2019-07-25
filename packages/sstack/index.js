@@ -47,14 +47,14 @@ function createResponseFromError (e) {
   }
 }
 
-exports.handler = fn => {
+function handler (fn) {
   return async handler => {
     const response = await fn(handler.event, handler.context)
     Object.assign(handler.response, response)
   }
 }
 
-exports.stack = (stack = [], error = []) => {
+function sstack (stack = [], error = []) {
   return async (event, context) => {
     const original = {
       event,
@@ -83,4 +83,9 @@ exports.stack = (stack = [], error = []) => {
       }
     }
   }
+}
+
+module.exports = {
+  handler,
+  sstack
 }
