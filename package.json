@@ -1,0 +1,31 @@
+{
+  "name": "sstack",
+  "version": "0.0.1",
+  "description": "A different approach to serverless middleware.",
+  "source": "index.js",
+  "module": "dist/sstack.es.js",
+  "main": "dist/sstack.js",
+  "umd:main": "dist/sstack.umd.js",
+  "scripts": {
+    "clean": "lerna clean",
+    "bootstrap": "lerna bootstrap",
+    "publish": "lerna publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/estrattonbailey/sstack.git"
+  },
+  "author": "estrattonbailey",
+  "keywords": [
+    "serverless",
+    "middleware"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/estrattonbailey/sstack/issues"
+  },
+  "homepage": "https://github.com/estrattonbailey/sstack#readme",
+  "devDependencies": {
+    "lerna": "^3.13.1"
+  }
+}
