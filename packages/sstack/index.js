@@ -56,6 +56,21 @@ function handler (fn) {
 
 function sstack (stack = [], error = []) {
   return async (event, context) => {
+    /**
+     * Normalize all keys to lowercase to match HTTP/2 spec
+     */
+    for (const key in event.headers) {
+      event.headers[key.toLowerCase()] = event.headers[key]
+    }
+
+    /**
+     * Normalize event props
+     */
+    if (!!event.httpMethod) {
+      event.queryStringParameters = event.queryStringParameters || {}
+      event.pathParameters = event.pathParameters || {}
+    }
+
     const original = {
       event,
       context,
