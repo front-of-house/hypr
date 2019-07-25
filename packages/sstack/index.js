@@ -1,15 +1,3 @@
-function prune (src) {
-  let obj = Object.assign({}, src)
-
-  for (let key in obj) {
-    if (!obj[key]) {
-      delete obj[key]
-    }
-  }
-
-  return obj
-}
-
 async function apply (handler, stack) {
   let i = 0
 
@@ -20,31 +8,6 @@ async function apply (handler, stack) {
 
     return next ? run(next(handler)) : handler
   })(stack[i] ? stack[i](handler) : {})
-}
-
-function createResponseFromError (e) {
-  const {
-    status,
-    statusCode,
-    message,
-    title,
-    details,
-    source
-  } = e
-
-  return {
-    statusCode: status || statusCode || 500,
-    body: {
-      errors: [
-        prune({
-          status: status || statusCode || 500,
-          source,
-          title,
-          details: details || message
-        })
-      ]
-    }
-  }
 }
 
 function handler (fn) {
@@ -89,18 +52,23 @@ function sstack (stack = [], error = []) {
       return handler.response
     } catch (e) {
       handler.error = e
-      handler.response = Object.assign({}, original.response, createResponseFromError(e))
+
+      /**
+       * Reset response for error defaults
+       */
+      handler.response = {
+        statusCode: 500,
+        body: `500 - Server Error`
+      }
 
       try {
         handler = await apply(handler, error)
-
-        if (typeof handler.response.body !== 'string') {
-          handler.response.body += ''
-        }
-
         return handler.response
       } catch (e) {
-        return Object.assign({}, original.response, createResponseFromError(e))
+        return {
+          statusCode: 500,
+          body: `500 - Server Error`
+        }
       }
     }
   }
