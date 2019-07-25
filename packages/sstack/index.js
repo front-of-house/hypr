@@ -88,6 +88,7 @@ function sstack (stack = [], error = []) {
       handler = await apply(handler, stack)
       return handler.response
     } catch (e) {
+      handler.error = e
       handler.response = Object.assign({}, original.response, createResponseFromError(e))
 
       try {
