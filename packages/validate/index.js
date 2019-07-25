@@ -12,7 +12,9 @@ function request (schema, options = {}) {
     const valid = validate(ev.body)
 
     if (!valid) {
-      throw error(400, ajv.errorsText(validate.errors))
+      const e = error(400, ajv.errorsText(validate.errors))
+      e.title = 'Invalid Request Body'
+      throw e
     }
   }
 }
@@ -28,7 +30,9 @@ function response (schema, options = {}) {
     const valid = validate(res.body)
 
     if (!valid) {
-      throw error(400, ajv.errorsText(validate.errors))
+      const e = error(400, ajv.errorsText(validate.errors))
+      e.title = 'Invalid Response Body'
+      throw e
     }
   }
 }
