@@ -11,7 +11,7 @@ function parse (options = {}) {
     if (ev.httpMethod === 'GET') return
 
     if (ev.headers['content-type'] !== type) {
-      throw error(400, `Specified ${type} but request body was malformed`)
+      return
     }
 
     try {
