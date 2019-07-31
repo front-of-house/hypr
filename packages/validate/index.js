@@ -2,7 +2,9 @@ const Ajv = require('ajv')
 const error = require('http-errors')
 
 function request (schema, options = {}) {
-  const ajv = new Ajv({ allErrors: true })
+  const ajv = new Ajv(Object.assign({
+    allErrors: true
+  }, options.ajv || {}))
 
   return handler => {
     if (!schema) return
@@ -27,7 +29,9 @@ function request (schema, options = {}) {
 }
 
 function response (schema, options = {}) {
-  const ajv = new Ajv({ allErrors: true })
+  const ajv = new Ajv(Object.assign({
+    allErrors: true
+  }, options.ajv || {}))
 
   return handler => {
     if (!schema) return
