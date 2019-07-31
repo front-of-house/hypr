@@ -8,6 +8,13 @@ function request (schema, options = {}) {
     if (!schema) return
 
     const ev = handler.event
+
+    if (!ev.body) {
+      const e = error(422, `Request body was empty.`)
+      e.title = 'Invalid Request Body'
+      throw e
+    }
+
     const validate = ajv.compile(schema)
     const valid = validate(ev.body)
 
@@ -26,6 +33,13 @@ function response (schema, options = {}) {
     if (!schema) return
 
     const res = handler.response
+
+    if (!res.body) {
+      const e = error(422, `Response body was empty.`)
+      e.title = 'Invalid Response Body'
+      throw e
+    }
+
     const validate = ajv.compile(schema)
     const valid = validate(res.body)
 
