@@ -1,6 +1,6 @@
 {
   "name": "sstack",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "description": "A different approach to serverless middleware.",
   "main": "index.js",
   "scripts": {
