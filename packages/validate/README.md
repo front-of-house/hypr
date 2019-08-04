@@ -1,4 +1,4 @@
-# @sstack/json
+# @sstack/validate
 Request & response schema validation using [ajv](https://github.com/epoberezkin/ajv).
 ```bash
 npm i @sstack/validate --save
