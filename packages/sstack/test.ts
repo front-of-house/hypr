@@ -1,60 +1,100 @@
-import test from 'ava';
-import { sstack, handler, Handler, Context } from './index';
-
-const app = (fn: Handler) => sstack([
-  handler(fn)
-])
+import test from "ava";
+import { sstack, main, Context } from "./index";
 
 const event = {
-  httpMethod: 'GET',
-  path: '/',
+  httpMethod: "GET",
+  path: "/",
   headers: {},
-  body: '',
+  body: "",
   queryStringParameters: {},
   isBase64Encoded: false,
 };
 
 const context = {} as Context;
 
-test('success', async t => {
-  const fn = app(async (ev, ctx) => {
-    return {
-      body: {
-        foo: true
-      }
-    }
-  })
+test("works", async (t) => {
+  const fn = sstack([
+    main(async () => {
+      return {
+        body: "hello",
+      };
+    }),
+  ]);
 
-  const res = await fn(event, context)
-  const body = JSON.parse(res.body);
+  const res = await fn(event, context);
 
-  t.is(body.foo, true)
-})
+  t.is(res.body, "hello");
+});
 
-test('chainable', async t => {
-  const app = (fn: Handler) => sstack([
-    async handler => {
-      handler.response.headers = {
-        bar: 'true'
-      }
+test("error", async (t) => {
+  const fn = sstack([
+    main(async () => {
+      throw new Error("error");
+    }),
+  ]);
+
+  const res = await fn(event, context);
+
+  t.is(res.statusCode, 500);
+});
+
+test("errorStack", async (t) => {
+  const fn = sstack(
+    [
+      main(async () => {
+        throw new Error("error");
+      }),
+    ],
+    [
+      async ({ response }) => {
+        response.body = "override";
+      },
+    ]
+  );
+
+  const res = await fn(event, context);
+
+  t.is(res.body, "override");
+});
+
+test("errorStack with fallback error", async (t) => {
+  const fn = sstack(
+    [
+      main(async () => {
+        throw new Error("error");
+      }),
+    ],
+    [
+      async () => {
+        throw new Error("another error");
+      },
+    ]
+  );
+
+  const res = await fn(event, context);
+
+  t.is(res.body, "500 - Server Error");
+});
+
+test("chainable", async (t) => {
+  const fn = sstack([
+    async (request) => {
+      request.response.headers = {
+        bar: "true",
+      };
     },
-    handler(fn),
-    async handler => {
-      handler.response.body.foo = false
-    }
-  ])
+    main(async () => {
+      return {
+        body: "hello",
+      };
+    }),
+    async (request) => {
+      request.response.body.foo = false;
+    },
+  ]);
 
-  const fn = app(async (ev, ctx) => {
-    return {
-      body: {
-        foo: true
-      }
-    }
-  })
+  const res = await fn(event, context);
 
-  const res = await fn(event, context)
-  const body = JSON.parse(res.body);
-
-  t.is(body.foo, false)
-  t.is(res.headers.bar, 'true')
-})
+  t.is(res.body, "hello");
+  t.is(res.headers.bar, "true");
+});

@@ -3,6 +3,7 @@ import { Context as LambdaContext } from "aws-lambda";
 export type Context = LambdaContext;
 
 export type Event = {
+  isBase64Encoded: boolean;
   httpMethod: string;
   path: string;
   headers: {
@@ -12,16 +13,15 @@ export type Event = {
   queryStringParameters: {
     [key: string]: string;
   };
-  isBase64Encoded: boolean;
 };
 
-export type Response<Body = { [key: string]: any }> = {
+export type Response<Body = any> = {
   isBase64Encoded: boolean;
   statusCode: number;
   headers: {
     [key: string]: string;
   };
-  body: Body;
+  body?: Body;
 };
 
 export type Request = {
@@ -50,7 +50,7 @@ async function apply(request: Request, stack: Middleware[]) {
   })(stack[i] ? stack[i](request) : {});
 }
 
-export function handler(fn: Handler) {
+export function main(fn: Handler) {
   return async (request: Request) => {
     const response = await fn(request.event, request.context);
     Object.assign(request.response, response);
@@ -73,57 +73,42 @@ export function sstack(
       event.queryStringParameters = event.queryStringParameters || {};
     }
 
-    const request: Request = {
+    const base: Request = {
       event,
       context,
       response: {
         isBase64Encoded: false,
         statusCode: 200,
         headers: {},
-        body: {},
       },
     };
 
-    let handler = Object.assign({}, request);
+    let handler = Object.assign({}, base);
 
     try {
       handler = await apply(handler, stack);
-      const body =
-        typeof handler.response.body === "object"
-          ? JSON.stringify(handler.response.body)
-          : handler.response.body;
-
-      return {
-        ...handler.response,
-        body: body || "",
-      };
+      return handler.response;
     } catch (e) {
       handler.error = e;
 
-      /**
-       * Reset response for error defaults
-       */
+      // reset response for error w/ defaults to avoid exposure
       handler.response = {
-        ...request.response,
+        ...base.response,
         statusCode: 500,
       };
 
       // handle error stack
       try {
         handler = await apply(handler, errorStack);
-        const body =
-          typeof handler.response.body === "object"
-            ? JSON.stringify(handler.response.body)
-            : handler.response.body;
 
         return {
           ...handler.response,
-          body: body || `500 - Server Error`,
+          body: handler.response.body || `500 - Server Error`,
         };
       } catch (e) {
-        // catastrophic, reset to defauls
+        // catastrophic, reset to defauls to avoid exposure
         return {
-          ...request.response,
+          ...base.response,
           statusCode: 500,
           body: `500 - Server Error`,
         };
