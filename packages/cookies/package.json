@@ -2,9 +2,19 @@
   "name": "@sstack/cookies",
   "version": "0.1.4",
   "description": "Cookie parsing utility for sstack.",
-  "main": "index.js",
+  "source": "index.ts",
+  "main": "dist/sstack.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "ava"
+    "start": "npm run watch",
+    "build": "microbundle build",
+    "watch": "microbundle watch",
+    "test": "node test.js",
+    "test:watch": "npx nodemon node test.js",
+    "postbuild": "npm run test"
   },
   "repository": {
     "type": "git",
@@ -21,10 +31,12 @@
   },
   "homepage": "https://github.com/estrattonbailey/sstack#readme",
   "devDependencies": {
-    "ava": "^1.4.1"
+    "@types/cookie": "^0.4.0",
+    "baretest": "^2.0.0",
+    "microbundle": "^0.12.2"
   },
   "dependencies": {
     "cookie": "^0.4.0",
-    "http-errors": "^1.7.3"
+    "sstack": "^1.0.0-alpha.0"
   }
 }

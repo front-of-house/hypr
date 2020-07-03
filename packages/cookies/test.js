@@ -1,42 +1,46 @@
-const test = require('ava')
-const { parse, stringify } = require('./index.js')
+const assert = require("assert");
+const test = require("baretest")("@sstack/cookies");
+const { parse, serialize } = require("./dist/sstack.js");
 
-test('parse', t => {
-  const handler = {
+test("parse", () => {
+  const parser = parse();
+  const request = {
     event: {
-      body: JSON.stringify({
-        foo: true
-      })
-    }
-  }
+      headers: {
+        cookie: `a=b; c=${JSON.stringify({ d: "e" })}; f={"g"}`,
+      },
+    },
+  };
 
-  parse(handler)
+  parser(request);
 
-  t.is(handler.event.body.foo, true)
+  assert.equal(request.event.cookies.a, "b");
+  assert.equal(request.event.cookies.c.d, "e");
+  assert.equal(/Cookie/.test(request.event.cookies.f), true);
+});
 
-  try {
-    const res = parse('not json')
-  } catch (e) {
-    t.is(e.statusCode, 400)
-  }
-})
-
-test('stringify', t => {
-  const handler = {
+test("serialize", () => {
+  const serializer = serialize();
+  const request = {
     response: {
-      body: {
-        foo: true
-      }
-    }
-  }
+      cookies: {
+        a: "b",
+        c: ["d", { secure: true }],
+        e: { f: "g" },
+      },
+    },
+  };
 
-  stringify(handler)
+  serializer(request);
 
-  t.is(typeof handler.response.body, 'string')
+  const cookie = request.response.multiValueHeaders["set-cookie"];
 
-  try {
-    stringify(undefined)
-  } catch (e) {
-    t.is(e.statusCode, 400)
-  }
-})
+  assert.equal(cookie[0], "a=b");
+  assert.equal(cookie[1], "c=d; Secure");
+  assert.equal(cookie[2], "e=%7B%22f%22%3A%22g%22%7D");
+  assert.equal(request.response.cookies, undefined);
+});
+
+!(async function () {
+  await test.run();
+})();

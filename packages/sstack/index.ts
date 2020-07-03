@@ -2,7 +2,7 @@ import { Context as LambdaContext } from "aws-lambda";
 
 export type Context = LambdaContext;
 
-export type Event = {
+export interface Event {
   isBase64Encoded: boolean;
   httpMethod: string;
   path: string;
@@ -13,23 +13,26 @@ export type Event = {
   queryStringParameters: {
     [key: string]: string;
   };
-};
+}
 
-export type Response<Body = any> = {
+export interface Response<Body = any> {
   isBase64Encoded: boolean;
   statusCode: number;
-  headers: {
+  headers?: {
     [key: string]: string;
   };
+  multiValueHeaders?: {
+    [key: string]: string[];
+  }
   body?: Body;
-};
+}
 
-export type Request = {
+export interface Request {
   event: Event;
   context: Context;
   response: Response;
   error?: any;
-};
+}
 
 export type Middleware = (request: Request) => Promise<void>;
 
