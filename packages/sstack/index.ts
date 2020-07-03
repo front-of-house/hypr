@@ -35,19 +35,16 @@ export interface Request {
   error?: any;
 }
 
-export type Middleware = (request: Request) => Promise<void>;
+export type Middleware = (request: Request) => Promise<void> | void;
 
-type Handler = (
+export type RootHandler = (
   event: Event,
   context: Context
 ) => Promise<Partial<Response>> | Partial<Response>;
 
-export type Method = {
+export type Handler = {
   httpMethod: string;
-  handler: (
-    event: Event,
-    context: Context
-  ) => Promise<Partial<Response>> | Partial<Response>;
+  handler: RootHandler;
 };
 
 async function apply(request: Request, stack: Middleware[]) {
@@ -62,7 +59,7 @@ async function apply(request: Request, stack: Middleware[]) {
   })(stack[i] ? stack[i](request) : {});
 }
 
-export function main(methods: Method[]) {
+export function main(methods: Handler[]) {
   return async (request: Request) => {
     const { httpMethod } = request.event;
 
@@ -144,35 +141,35 @@ export function sstack(
   };
 }
 
-export function GET(handler: Handler) {
+export function GET(handler: RootHandler) {
   return {
     httpMethod: 'GET',
     handler,
   };
 }
 
-export function PUT(handler: Handler) {
+export function PUT(handler: RootHandler) {
   return {
     httpMethod: 'PUT',
     handler,
   };
 }
 
-export function POST(handler: Handler) {
+export function POST(handler: RootHandler) {
   return {
     httpMethod: 'POST',
     handler,
   };
 }
 
-export function PATCH(handler: Handler) {
+export function PATCH(handler: RootHandler) {
   return {
     httpMethod: 'PATCH',
     handler,
   };
 }
 
-export function DELETE(handler: Handler) {
+export function DELETE(handler: RootHandler) {
   return {
     httpMethod: 'DELETE',
     handler,
