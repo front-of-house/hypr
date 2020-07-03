@@ -1,6 +1,6 @@
 {
   "name": "@sstack/json",
-  "version": "0.1.4",
+  "version": "1.0.0-alpha.1",
   "description": "JSON utilities for sstack.",
   "main": "index.js",
   "scripts": {

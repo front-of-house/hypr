@@ -1,6 +1,6 @@
 {
   "name": "sstack",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0-alpha.1",
   "description": "A different approach to serverless middleware.",
   "source": "index.ts",
   "main": "dist/sstack.js",
