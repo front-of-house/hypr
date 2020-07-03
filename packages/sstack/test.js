@@ -1,6 +1,6 @@
 const assert = require("assert");
 const test = require("baretest")("sstack");
-const { sstack, main } = require("./dist/sstack.js");
+const { sstack, main, GET, POST } = require("./dist/sstack.js");
 
 const event = {
   httpMethod: "GET",
@@ -13,13 +13,15 @@ const event = {
 
 const context = {};
 
-test("works", async (t) => {
+test("works", async () => {
   const fn = sstack([
-    main(async () => {
-      return {
-        body: "hello",
-      };
-    }),
+    main([
+      GET(async () => {
+        return {
+          body: "hello",
+        };
+      }),
+    ]),
   ]);
 
   const res = await fn(event, context);
@@ -27,11 +29,13 @@ test("works", async (t) => {
   assert.equal(res.body, "hello");
 });
 
-test("error", async (t) => {
+test("error", async () => {
   const fn = sstack([
-    main(async () => {
-      throw new Error("error");
-    }),
+    main([
+      GET(async () => {
+        throw new Error("error");
+      }),
+    ]),
   ]);
 
   const res = await fn(event, context);
@@ -39,12 +43,14 @@ test("error", async (t) => {
   assert.equal(res.statusCode, 500);
 });
 
-test("errorStack", async (t) => {
+test("errorStack", async () => {
   const fn = sstack(
     [
-      main(async () => {
-        throw new Error("error");
-      }),
+      main([
+        GET(async () => {
+          throw new Error("error");
+        }),
+      ]),
     ],
     [
       async ({ response }) => {
@@ -58,12 +64,14 @@ test("errorStack", async (t) => {
   assert.equal(res.body, "override");
 });
 
-test("errorStack with fallback error", async (t) => {
+test("errorStack with fallback error", async () => {
   const fn = sstack(
     [
-      main(async () => {
-        throw new Error("error");
-      }),
+      main([
+        GET(async () => {
+          throw new Error("error");
+        }),
+      ]),
     ],
     [
       async () => {
@@ -77,18 +85,20 @@ test("errorStack with fallback error", async (t) => {
   assert.equal(res.body, "500 - Server Error");
 });
 
-test("chainable", async (t) => {
+test("chainable", async () => {
   const fn = sstack([
     async (request) => {
       request.response.headers = {
         bar: "true",
       };
     },
-    main(async () => {
-      return {
-        body: "hello",
-      };
-    }),
+    main([
+      GET(async () => {
+        return {
+          body: "hello",
+        };
+      }),
+    ]),
     async (request) => {
       request.response.body.foo = false;
     },
@@ -98,6 +108,23 @@ test("chainable", async (t) => {
 
   assert.equal(res.body, "hello");
   assert.equal(res.headers.bar, "true");
+});
+
+test("method not allowed", async () => {
+  const fn = sstack([
+    main([
+      POST(async () => {
+        return {
+          body: "hello",
+        };
+      }),
+    ]),
+  ]);
+
+  const res = await fn(event, context);
+
+  assert.equal(res.statusCode, 405);
+  assert.equal(res.body, "Method Not Allowed");
 });
 
 !(async function () {

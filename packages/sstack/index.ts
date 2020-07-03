@@ -1,4 +1,5 @@
 import { Context as LambdaContext } from "aws-lambda";
+import createError from 'http-errors';
 
 export type Context = LambdaContext;
 
@@ -36,10 +37,18 @@ export interface Request {
 
 export type Middleware = (request: Request) => Promise<void>;
 
-export type Handler = (
+type Handler = (
   event: Event,
   context: Context
-) => Promise<Partial<Response>>;
+) => Promise<Partial<Response>> | Partial<Response>;
+
+export type Method = {
+  httpMethod: string;
+  handler: (
+    event: Event,
+    context: Context
+  ) => Promise<Partial<Response>> | Partial<Response>;
+};
 
 async function apply(request: Request, stack: Middleware[]) {
   let i = 0;
@@ -53,10 +62,24 @@ async function apply(request: Request, stack: Middleware[]) {
   })(stack[i] ? stack[i](request) : {});
 }
 
-export function main(fn: Handler) {
+export function main(methods: Method[]) {
   return async (request: Request) => {
-    const response = await fn(request.event, request.context);
-    Object.assign(request.response, response);
+    const { httpMethod } = request.event;
+
+    let called = false;
+
+    for (const fn of methods) {
+      if (httpMethod === fn.httpMethod) {
+        const response = await fn.handler(request.event, request.context);
+        Object.assign(request.response, response);
+        called = true;
+        break;
+      }
+    }
+
+    if (!called) {
+      throw createError(405);
+    }
   };
 }
 
@@ -97,7 +120,8 @@ export function sstack(
       // reset response for error w/ defaults to avoid exposure
       handler.response = {
         ...base.response,
-        statusCode: 500,
+        statusCode: e.statusCode || 500,
+        body: e.message,
       };
 
       // handle error stack
@@ -117,5 +141,40 @@ export function sstack(
         };
       }
     }
+  };
+}
+
+export function GET(handler: Handler) {
+  return {
+    httpMethod: 'GET',
+    handler,
+  };
+}
+
+export function PUT(handler: Handler) {
+  return {
+    httpMethod: 'PUT',
+    handler,
+  };
+}
+
+export function POST(handler: Handler) {
+  return {
+    httpMethod: 'POST',
+    handler,
+  };
+}
+
+export function PATCH(handler: Handler) {
+  return {
+    httpMethod: 'PATCH',
+    handler,
+  };
+}
+
+export function DELETE(handler: Handler) {
+  return {
+    httpMethod: 'DELETE',
+    handler,
   };
 }
