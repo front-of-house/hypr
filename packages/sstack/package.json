@@ -12,7 +12,9 @@
     "start": "npm run watch",
     "build": "microbundle build",
     "watch": "microbundle watch",
-    "test": "ava"
+    "test": "node test.js",
+    "test:watch": "npx nodemon test.js",
+    "postbuild": "npm run test"
   },
   "repository": {
     "type": "git",
@@ -28,20 +30,9 @@
     "url": "https://github.com/estrattonbailey/sstack/issues"
   },
   "homepage": "https://github.com/estrattonbailey/sstack#readme",
-  "ava": {
-    "compileEnhancements": false,
-    "extensions": [
-      "ts"
-    ],
-    "require": [
-      "ts-node/register"
-    ]
-  },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.57",
-    "ava": "^1.4.1",
-    "core-js": "^3.6.5",
-    "microbundle": "^0.12.2",
-    "ts-node": "^8.10.2"
+    "baretest": "^2.0.0",
+    "microbundle": "^0.12.2"
   }
 }

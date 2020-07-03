@@ -1,5 +1,6 @@
-import test from "ava";
-import { sstack, main, Context } from "./index";
+const assert = require("assert");
+const test = require("baretest")("sstack");
+const { sstack, main } = require("./dist/sstack.js");
 
 const event = {
   httpMethod: "GET",
@@ -10,7 +11,7 @@ const event = {
   isBase64Encoded: false,
 };
 
-const context = {} as Context;
+const context = {};
 
 test("works", async (t) => {
   const fn = sstack([
@@ -23,7 +24,7 @@ test("works", async (t) => {
 
   const res = await fn(event, context);
 
-  t.is(res.body, "hello");
+  assert.equal(res.body, "hello");
 });
 
 test("error", async (t) => {
@@ -35,7 +36,7 @@ test("error", async (t) => {
 
   const res = await fn(event, context);
 
-  t.is(res.statusCode, 500);
+  assert.equal(res.statusCode, 500);
 });
 
 test("errorStack", async (t) => {
@@ -54,7 +55,7 @@ test("errorStack", async (t) => {
 
   const res = await fn(event, context);
 
-  t.is(res.body, "override");
+  assert.equal(res.body, "override");
 });
 
 test("errorStack with fallback error", async (t) => {
@@ -73,7 +74,7 @@ test("errorStack with fallback error", async (t) => {
 
   const res = await fn(event, context);
 
-  t.is(res.body, "500 - Server Error");
+  assert.equal(res.body, "500 - Server Error");
 });
 
 test("chainable", async (t) => {
@@ -95,6 +96,10 @@ test("chainable", async (t) => {
 
   const res = await fn(event, context);
 
-  t.is(res.body, "hello");
-  t.is(res.headers.bar, "true");
+  assert.equal(res.body, "hello");
+  assert.equal(res.headers.bar, "true");
 });
+
+!(async function () {
+  await test.run();
+})();
