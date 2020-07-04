@@ -1,5 +1,5 @@
 import { Context as LambdaContext } from "aws-lambda";
-import createError from 'http-errors';
+import createError from "http-errors";
 
 export type Context = LambdaContext;
 
@@ -24,11 +24,15 @@ export interface Response<Body = any> {
   };
   multiValueHeaders?: {
     [key: string]: string[];
-  }
+  };
   body?: Body;
 }
 
 export interface Request {
+  __meta: {
+    handled: boolean;
+    methodDefined: boolean;
+  };
   event: Event;
   context: Context;
   response: Response;
@@ -37,15 +41,10 @@ export interface Request {
 
 export type Middleware = (request: Request) => Promise<void> | void;
 
-export type RootHandler = (
+export type Lambda = (
   event: Event,
   context: Context
 ) => Promise<Partial<Response>> | Partial<Response>;
-
-export type Handler = {
-  httpMethod: string;
-  handler: RootHandler;
-};
 
 async function apply(request: Request, stack: Middleware[]) {
   let i = 0;
@@ -59,31 +58,34 @@ async function apply(request: Request, stack: Middleware[]) {
   })(stack[i] ? stack[i](request) : {});
 }
 
-export function main(methods: Handler[]) {
-  return async (request: Request) => {
-    const { httpMethod } = request.event;
+export function createMethodHandler(method: string) {
+  return (lambda: Lambda): Middleware => {
+    return async (request: Request) => {
+      request.__meta.methodDefined = true;
 
-    let called = false;
+      if (request.event.httpMethod === method) {
+        if (request.__meta.handled) {
+          throw createError(500, `Request was handled twice`);
+        } else {
+          request.__meta.handled = true;
+        }
 
-    for (const fn of methods) {
-      if (httpMethod === fn.httpMethod) {
-        const response = await fn.handler(request.event, request.context);
-        Object.assign(request.response, response);
-        called = true;
-        break;
+        Object.assign(
+          request.response,
+          await lambda(request.event, request.context)
+        );
       }
-    }
-
-    if (!called) {
-      throw createError(405);
-    }
+    };
   };
 }
 
-export function sstack(
-  stack: Middleware[] = [],
-  errorStack: Middleware[] = []
-) {
+export const GET = createMethodHandler("GET");
+export const POST = createMethodHandler("POST");
+export const PUT = createMethodHandler("PUT");
+export const PATCH = createMethodHandler("PATCH");
+export const DELETE = createMethodHandler("DELETE");
+
+export function sstack(stack: Middleware[], errorStack: Middleware[] = []) {
   // the actual lambda signature
   return async (event: Event, context: Context): Promise<Response<string>> => {
     // normalize all keys to lowercase to match HTTP/2 spec
@@ -97,6 +99,10 @@ export function sstack(
     }
 
     const base: Request = {
+      __meta: {
+        handled: false,
+        methodDefined: false,
+      },
       event,
       context,
       response: {
@@ -106,16 +112,24 @@ export function sstack(
       },
     };
 
-    let handler = Object.assign({}, base);
+    let res = Object.assign({}, base);
 
     try {
-      handler = await apply(handler, stack);
-      return handler.response;
+      res = await apply(res, stack);
+
+      if (!res.__meta.handled) {
+        if (res.__meta.methodDefined) {
+          throw createError(405);
+        }
+        throw createError(500, `Request was not handled`);
+      }
+
+      return res.response;
     } catch (e) {
-      handler.error = e;
+      res.error = e;
 
       // reset response for error w/ defaults to avoid exposure
-      handler.response = {
+      res.response = {
         ...base.response,
         statusCode: e.statusCode || 500,
         body: e.message,
@@ -123,55 +137,20 @@ export function sstack(
 
       // handle error stack
       try {
-        handler = await apply(handler, errorStack);
+        res = await apply(res, errorStack);
 
         return {
-          ...handler.response,
-          body: handler.response.body || `500 - Server Error`,
+          ...res.response,
+          body: res.response.body || `Server error`,
         };
       } catch (e) {
         // catastrophic, reset to defauls to avoid exposure
         return {
           ...base.response,
           statusCode: 500,
-          body: `500 - Server Error`,
+          body: `Server error`,
         };
       }
     }
-  };
-}
-
-export function GET(handler: RootHandler) {
-  return {
-    httpMethod: 'GET',
-    handler,
-  };
-}
-
-export function PUT(handler: RootHandler) {
-  return {
-    httpMethod: 'PUT',
-    handler,
-  };
-}
-
-export function POST(handler: RootHandler) {
-  return {
-    httpMethod: 'POST',
-    handler,
-  };
-}
-
-export function PATCH(handler: RootHandler) {
-  return {
-    httpMethod: 'PATCH',
-    handler,
-  };
-}
-
-export function DELETE(handler: RootHandler) {
-  return {
-    httpMethod: 'DELETE',
-    handler,
   };
 }
