@@ -36,6 +36,7 @@
     "microbundle": "^0.12.2"
   },
   "dependencies": {
+    "deepmerge": "^4.2.2",
     "http-errors": "^1.8.0"
   }
 }

@@ -1,5 +1,6 @@
 import { Context as LambdaContext } from "aws-lambda";
 import createError from "http-errors";
+import deepmerge from 'deepmerge';
 
 export type Context = LambdaContext;
 
@@ -70,7 +71,7 @@ export function createMethodHandler(method: string) {
           request.__meta.handled = true;
         }
 
-        Object.assign(
+        request.response = deepmerge(
           request.response,
           await lambda(request.event, request.context)
         );
