@@ -14,9 +14,7 @@ declare module "sstack" {
         | string
         | [
             string,
-            {
-              [key: string]: string;
-            }
+            cookie.CookieSerializeOptions
           ];
     };
   }
