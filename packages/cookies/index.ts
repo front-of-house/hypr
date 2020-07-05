@@ -9,7 +9,7 @@ declare module "sstack" {
   }
 
   interface Response {
-    cookies?: {
+    cookies: {
       [key: string]:
         | string
         | [
@@ -21,8 +21,9 @@ declare module "sstack" {
 }
 
 export function parse(options = {}): Middleware {
-  return async ({ event }) => {
+  return async ({ event, response }) => {
     event.cookies = {};
+    response.cookies = {};
 
     if (event.headers.cookie) {
       event.cookies = cookie.parse(event.headers.cookie);
