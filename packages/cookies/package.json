@@ -1,6 +1,6 @@
 {
   "name": "@sstack/cookies",
-  "version": "1.0.0-y.0",
+  "version": "1.0.0-y.1",
   "description": "Cookie parsing utility for sstack.",
   "source": "index.ts",
   "main": "dist/sstack.js",
@@ -37,6 +37,6 @@
   },
   "dependencies": {
     "cookie": "^0.4.0",
-    "sstack": "^1.0.0-y.0"
+    "sstack": "^1.0.0-y.1"
   }
 }
