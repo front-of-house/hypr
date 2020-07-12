@@ -22,8 +22,8 @@ declare module "sstack" {
 
 export function parse(options = {}): Middleware {
   return async ({ event, response }) => {
-    event.cookies = {};
-    response.cookies = {};
+    event.cookies = event.cookies || {};
+    response.cookies = response.cookies || {};
 
     if (event.headers.cookie) {
       event.cookies = cookie.parse(event.headers.cookie);

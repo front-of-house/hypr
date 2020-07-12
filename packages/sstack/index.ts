@@ -89,6 +89,9 @@ export const DELETE = createMethodHandler("DELETE");
 export function sstack(stack: Middleware[], errorStack: Middleware[] = []) {
   // the actual lambda signature
   return async (event: Event, context: Context): Promise<Response<string>> => {
+    event = Object.assign({}, event)
+    context = Object.assign({}, context)
+
     // normalize all keys to lowercase to match HTTP/2 spec
     for (const key in event.headers) {
       event.headers[key.toLowerCase()] = event.headers[key];

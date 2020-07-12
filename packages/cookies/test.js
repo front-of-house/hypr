@@ -10,6 +10,7 @@ test("parse", () => {
         cookie: `a=b; c=${JSON.stringify({ d: "e" })}; f={"g"}`,
       },
     },
+    response: {},
   };
 
   parser(request);
@@ -22,6 +23,7 @@ test("parse", () => {
 test("serialize", () => {
   const serializer = serialize();
   const request = {
+    event: {},
     response: {
       cookies: {
         a: "b",
