@@ -1,6 +1,6 @@
 {
   "name": "@sstack/helmet",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-y.2",
   "description": "Security header utility for sstack.",
   "main": "index.js",
   "scripts": {
