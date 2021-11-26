@@ -1,6 +1,6 @@
 # hypr
 
-[![npm version](https://img.shields.io/npm/v/hypr?style=flat&colorA=4488FF&colorB=4488FF)](https://www.npmjs.com/package/hypr) [![test coverage](https://img.shields.io/coveralls/github/sure-thing/hypr?style=flat&colorA=223355&colorB=223355)](https://coveralls.io/github/sure-thing/hypr?branch=main) [![npm bundle size](https://badgen.net/packagephobia/install/hypr?color=223355&labelColor=223355)](https://packagephobia.com/result?p=hypr)
+[![npm version](https://img.shields.io/npm/v/hypr?style=flat&colorA=4488FF&colorB=4488FF)](https://www.npmjs.com/package/hypr) [![test coverage](https://img.shields.io/coveralls/github/sure-thing/hypr?style=flat&colorA=223355&colorB=223355)](https://coveralls.io/github/sure-thing/hypr?branch=main) [![npm bundle size](https://badgen.net/bundlephobia/min/hypr?color=223355&labelColor=223355)](https://bundlephobia.com/result?p=hypr)
 
 Minimalist serverless middleware and utilities. Get started instantly with [Presta](https://presta.run/).
 
