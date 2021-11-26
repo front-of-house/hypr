@@ -91,3 +91,7 @@ throw new hypr.HttpError(400, {
 ## License
 
 MIT License © [Sure Thing](https://github.com/sure-thing)
+
+
+[![Coverage Status](https://coveralls.io/repos/github/sure-thing/hypr/badge.svg?branch=)](https://coveralls.io/github/sure-thing/hypr?branch=)
+
