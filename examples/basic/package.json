@@ -1,0 +1,12 @@
+{
+  "name": "@hypr-example/basic",
+  "version": "0.0.0",
+  "description": "A basic example",
+  "scripts": {
+    "start": "presta dev"
+  },
+  "dependencies": {
+    "hypr": "workspace:^1.5.0",
+    "presta": "^0.41.0"
+  }
+}

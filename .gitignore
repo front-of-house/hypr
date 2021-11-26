@@ -2,3 +2,12 @@
 *.map
 node_modules/
 dist
+.nyc_output
+
+# exports
+index.js
+index.d.ts
+hypr.js
+hypr.d.ts
+helmet.js
+helmet.d.ts
