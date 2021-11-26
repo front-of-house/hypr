@@ -1,0 +1,17 @@
+node_modules
+demo
+fixtures
+test/fixtures
+dist
+build
+.nyc_output
+coverage
+pnpm-lock.yaml
+.pnpm*
+.changeset
+
+# exports
+index.js
+index.d.ts
+helmet.js
+helmet.d.ts
