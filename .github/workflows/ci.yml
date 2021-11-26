@@ -10,7 +10,7 @@ env:
 
 jobs:
   build:
-    name: CI
+    name: Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -42,5 +42,5 @@ jobs:
       - name: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.TRUEWORK_TEAM_NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: pnpx semantic-release -d
