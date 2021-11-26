@@ -3,6 +3,8 @@
 node_modules/
 dist
 .nyc_output
+.pnpm*
+coverage
 
 # exports
 index.js
