@@ -1,7 +1,7 @@
 import tap from 'tap'
 import status from 'statuses'
 
-import { stack, main, Context, normalizeResponse, errorHandler, ContextError, HttpError } from '../hypr'
+import { stack, main, Context, normalizeResponse, errorHandler, enhanceEvent, ContextError, HttpError } from '../hypr'
 
 const event = {
   rawUrl: '/',
@@ -140,6 +140,30 @@ tap.test(`errorHandler - HttpError with message`, async (t) => {
     statusCode: 400,
     json: message,
   })
+})
+
+tap.test(`enhanceEvent - application/json`, async (t) => {
+  const e = {
+    ...event,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: '{"foo":true}',
+  }
+  const ev = enhanceEvent(e)
+
+  t.equal(ev.json?.foo, true)
+})
+
+tap.test(`enhanceEvent - unknown content type`, async (t) => {
+  const e = {
+    ...event,
+    headers: {},
+    body: '{"foo":true}',
+  }
+  const ev = enhanceEvent(e)
+
+  t.equal(ev.json, undefined)
 })
 
 tap.test('base', async (t) => {

@@ -5,7 +5,7 @@ import { HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/function
 export { HandlerResponse } from '@netlify/functions'
 export type Dictionary = Record<string, any>
 export type Unsync<T> = T | Promise<T>
-export type Event<T = Dictionary> = HandlerEvent & Dictionary & T
+export type Event<T = Dictionary> = HandlerEvent & { json?: Dictionary } & Dictionary & T
 export type ContextError = { error: HttpError | Error }
 export type Context<T = Dictionary> = HandlerContext & Dictionary & T
 export type BodyShorthands = {
@@ -118,6 +118,18 @@ export function errorHandler(event: Event, context: Context) {
   return response
 }
 
+export function enhanceEvent(event: Event): Event {
+  const type = event.headers['Content-Type'] || event.headers['content-type'] || ''
+
+  if (event.body && type.includes('json')) {
+    try {
+      event.json = JSON.parse(event.body)
+    } catch (e) {}
+  }
+
+  return event
+}
+
 async function run(event: Event, context: Context, handlers: Handler<any, any>[]) {
   let response = {}
 
@@ -134,15 +146,17 @@ async function run(event: Event, context: Context, handlers: Handler<any, any>[]
 
 export function stack(handlers: Handler[], errorHandlers: ErrorHandler[] = []) {
   return async function main(event: Event, context: Context): Promise<HandlerResponse> {
+    const ev = enhanceEvent(event)
+
     try {
-      return await run(event, context, handlers)
+      return await run(ev, context, handlers)
     } catch (e) {
       try {
         context.error = e instanceof Error ? e : new Error(String(e))
-        return await run(event, context, errorHandlers.length ? errorHandlers : [errorHandler])
+        return await run(ev, context, errorHandlers.length ? errorHandlers : [errorHandler])
       } catch (e) {
         context.error = e instanceof Error ? e : new Error(String(e))
-        return normalizeResponse(errorHandler(event, context))
+        return normalizeResponse(errorHandler(ev, context))
       }
     }
   }
