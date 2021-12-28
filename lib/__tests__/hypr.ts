@@ -1,7 +1,10 @@
-import tap from 'tap'
+import { suite } from 'uvu'
+import * as assert from 'uvu/assert'
 import status from 'statuses'
 
 import { stack, main, Context, normalizeResponse, errorHandler, enhanceEvent, ContextError, HttpError } from '../hypr'
+
+const test = suite('hypr')
 
 const event = {
   rawUrl: '/',
@@ -17,49 +20,49 @@ const event = {
 }
 const context = {} as Context
 
-tap.test('normalizeResponse - html', async (t) => {
+test('normalizeResponse - html', async () => {
   const res = normalizeResponse({
     html: 'body',
   })
-  t.ok(res.headers && String(res.headers['Content-Type']).includes('text/html'))
-  t.equal(res.body, 'body')
+  assert.ok(res.headers && String(res.headers['Content-Type']).includes('text/html'))
+  assert.equal(res.body, 'body')
 })
 
-tap.test('normalizeResponse - json', async (t) => {
+test('normalizeResponse - json', async () => {
   const json = { foo: true }
   const res = normalizeResponse({ json })
-  t.ok(res.headers && String(res.headers['Content-Type']).includes('application/json'))
-  t.equal(res.body, JSON.stringify(json))
+  assert.ok(res.headers && String(res.headers['Content-Type']).includes('application/json'))
+  assert.equal(res.body, JSON.stringify(json))
 })
 
-tap.test('normalizeResponse - xml', async (t) => {
+test('normalizeResponse - xml', async () => {
   const xml = '</>'
   const res = normalizeResponse({ xml })
-  t.ok(res.headers && String(res.headers['Content-Type']).includes('application/xml'))
-  t.equal(res.body, xml)
+  assert.ok(res.headers && String(res.headers['Content-Type']).includes('application/xml'))
+  assert.equal(res.body, xml)
 })
 
-tap.test('normalizeResponse - statusCode', async (t) => {
+test('normalizeResponse - statusCode', async () => {
   const res = normalizeResponse({ statusCode: 400 })
-  t.equal(res.statusCode, 400)
+  assert.equal(res.statusCode, 400)
 })
 
-tap.test('normalizeResponse - headers', async (t) => {
+test('normalizeResponse - headers', async () => {
   const res = normalizeResponse({ headers: { Host: 'foo' } })
-  t.ok(res.headers && res.headers.Host === 'foo')
+  assert.ok(res.headers && res.headers.Host === 'foo')
 })
 
-tap.test('normalizeResponse - multiValueHeaders', async (t) => {
+test('normalizeResponse - multiValueHeaders', async () => {
   const res = normalizeResponse({
     multiValueHeaders: { 'Set-Cookie': ['foo', 'bar'] },
   })
-  t.ok(res.multiValueHeaders && res.multiValueHeaders['Set-Cookie'][0] === 'foo')
+  assert.ok(res.multiValueHeaders && res.multiValueHeaders['Set-Cookie'][0] === 'foo')
 })
 
-tap.test(`HttpError`, async (t) => {
-  const err = new HttpError(400)
+test(`HttpError`, async () => {
+  const err = { ...new HttpError(400) }
 
-  t.same(err, {
+  assert.equal(err, {
     name: status.message[400],
     statusCode: 400,
     message: '',
@@ -67,47 +70,47 @@ tap.test(`HttpError`, async (t) => {
   })
 })
 
-tap.test(`HttpError - 500`, async (t) => {
+test(`HttpError - 500`, async () => {
   const err = new HttpError(500)
-  t.equal(err.expose, false)
+  assert.equal(err.expose, false)
 })
 
-tap.test(`HttpError - 400 w/ message`, async (t) => {
+test(`HttpError - 400 w/ message`, async () => {
   const err = new HttpError(400, `foo`)
-  t.equal(err.message, 'foo')
+  assert.equal(err.message, 'foo')
 })
 
-tap.test(`HttpError - 400 w/ JSON message`, async (t) => {
+test(`HttpError - 400 w/ JSON message`, async () => {
   const message = { foo: true }
   const err = new HttpError(400, message)
-  t.same(err.message, message)
+  assert.equal(err.message, message)
 })
 
-tap.test(`HttpError - 500 w/ message`, async (t) => {
+test(`HttpError - 500 w/ message`, async () => {
   const err = new HttpError(500, `foo`)
-  t.equal(err.message, 'foo')
-  t.equal(err.expose, false)
+  assert.equal(err.message, 'foo')
+  assert.equal(err.expose, false)
 })
 
-tap.test(`HttpError - 400 expose = false`, async (t) => {
+test(`HttpError - 400 expose = false`, async () => {
   const err = new HttpError(400, `foo`, { expose: false })
-  t.equal(err.expose, false)
+  assert.equal(err.expose, false)
 })
 
-tap.test(`HttpError - headers`, async (t) => {
+test(`HttpError - headers`, async () => {
   const err = new HttpError(400, `foo`, {
     headers: { Foo: 'bar' },
   })
-  t.equal(err.headers?.Foo, 'bar')
+  assert.equal(err.headers?.Foo, 'bar')
 })
 
-tap.test(`errorHandler - Error`, async (t) => {
+test(`errorHandler - Error`, async () => {
   const ctx = {
     error: new Error('foo'),
   } as Context<ContextError>
   const response = errorHandler(event, ctx)
 
-  t.same(response, {
+  assert.equal(response, {
     statusCode: 500,
     json: {
       detail: status.message[500],
@@ -115,13 +118,13 @@ tap.test(`errorHandler - Error`, async (t) => {
   })
 })
 
-tap.test(`errorHandler - HttpError`, async (t) => {
+test(`errorHandler - HttpError`, async () => {
   const ctx = {
     error: new HttpError(400),
   } as Context<ContextError>
   const response = errorHandler(event, ctx)
 
-  t.same(response, {
+  assert.equal(response, {
     statusCode: 400,
     json: {
       detail: status.message[400],
@@ -129,20 +132,56 @@ tap.test(`errorHandler - HttpError`, async (t) => {
   })
 })
 
-tap.test(`errorHandler - HttpError with message`, async (t) => {
+test(`errorHandler - HttpError with message`, async () => {
+  const message = 'whoops'
+  const ctx = {
+    error: new HttpError(400, message),
+  } as Context<ContextError>
+  const response = errorHandler(event, ctx)
+
+  assert.equal(response, {
+    statusCode: 400,
+    json: {
+      detail: message,
+    },
+  })
+})
+
+test(`errorHandler - HttpError with JSON message`, async () => {
   const message = { foo: true }
   const ctx = {
     error: new HttpError(400, message),
   } as Context<ContextError>
   const response = errorHandler(event, ctx)
 
-  t.same(response, {
+  assert.equal(response, {
     statusCode: 400,
     json: message,
   })
 })
 
-tap.test(`enhanceEvent - application/json`, async (t) => {
+test(`errorHandler - HttpError with options`, async () => {
+  const message = { foo: true }
+  const ctx = {
+    error: new HttpError(400, message, {
+      expose: false,
+      headers: { 'x-test': 'test' },
+    }),
+  } as Context<ContextError>
+  const response = errorHandler(event, ctx)
+
+  assert.equal(response, {
+    statusCode: 400,
+    headers: {
+      'x-test': 'test',
+    },
+    json: {
+      detail: status.message[400],
+    },
+  })
+})
+
+test(`enhanceEvent - application/json`, async () => {
   const e = {
     ...event,
     headers: {
@@ -152,10 +191,10 @@ tap.test(`enhanceEvent - application/json`, async (t) => {
   }
   const ev = enhanceEvent(e)
 
-  t.equal(ev.json?.foo, true)
+  assert.equal(ev.json?.foo, true)
 })
 
-tap.test(`enhanceEvent - unknown content type`, async (t) => {
+test(`enhanceEvent - unknown content type`, async () => {
   const e = {
     ...event,
     headers: {},
@@ -163,10 +202,10 @@ tap.test(`enhanceEvent - unknown content type`, async (t) => {
   }
   const ev = enhanceEvent(e)
 
-  t.equal(ev.json, undefined)
+  assert.equal(ev.json, undefined)
 })
 
-tap.test('base', async (t) => {
+test('base', async () => {
   const run = stack([
     (ev) => {
       ev.auth = true
@@ -183,27 +222,47 @@ tap.test('base', async (t) => {
   const response = await run(event, context)
 
   if (!response.body) {
-    t.fail()
+    throw new Error('fail')
     return
   }
 
-  t.same(JSON.parse(response.body), { auth: true })
+  assert.equal(JSON.parse(response.body), { auth: true })
 })
 
-tap.test(`middleware returns early`, async (t) => {
-  const run = stack([
-    () => ({ body: 'middleware' }),
-    () => {
-      return { statusCode: 200, body: 'handler' }
+test(`base with JSON`, async () => {
+  let plan = 0
+
+  const json = { foo: true }
+  const run = stack(
+    [
+      (event) => {
+        assert.equal(event.json, json)
+        plan++
+        return { statusCode: 204 }
+      },
+    ],
+    [
+      (event, ctx) => {
+        console.log(ctx.error)
+      },
+    ]
+  )
+  await run(
+    {
+      ...event,
+      body: JSON.stringify(json),
+      headers: {
+        'Content-Type': 'application/json',
+      },
     },
-  ])
-  const response = await run(event, context)
+    context
+  )
 
-  t.equal(response.body, 'handler')
+  assert.equal(plan, 1)
 })
 
-tap.test(`error stack`, async (t) => {
-  t.plan(3)
+test(`error stack`, async () => {
+  let plan = 0
 
   const run = stack(
     [
@@ -216,7 +275,7 @@ tap.test(`error stack`, async (t) => {
     ],
     [
       () => {
-        t.pass()
+        plan++
       },
       (ev, ctx) => {
         return {
@@ -228,11 +287,12 @@ tap.test(`error stack`, async (t) => {
   )
   const response = await run(event, context)
 
-  t.equal(response.statusCode, 400)
-  t.equal(response.body, 'foo')
+  assert.equal(plan, 1)
+  assert.equal(response.statusCode, 400)
+  assert.equal(response.body, 'foo')
 })
 
-tap.test(`catastrophic error`, async (t) => {
+test(`catastrophic error`, async () => {
   const run = stack(
     [
       () => {
@@ -247,24 +307,25 @@ tap.test(`catastrophic error`, async (t) => {
   )
   const response = await run(event, context)
 
-  t.equal(response.statusCode, 500)
+  assert.equal(response.statusCode, 500)
 })
 
-tap.test(`nothing returned`, async (t) => {
+test(`nothing returned`, async () => {
   const run = stack([() => {}], [() => {}])
   const response = await run(event, context)
 
-  t.equal(response.statusCode, 500)
+  assert.equal(response.statusCode, 500)
 })
 
-tap.test(`main - single fn`, async (t) => {
+test(`main - single fn`, async () => {
   const response = await main((e) => ({ statusCode: 204 }))(event, context)
 
-  if (!response) t.fail()
-  else t.equal(response.statusCode, 204)
+  if (!response) {
+    throw new Error('no response')
+  } else assert.equal(response.statusCode, 204)
 })
 
-tap.test(`main - methods`, async (t) => {
+test(`main - methods`, async () => {
   const e = Object.assign({}, event, { httpMethod: 'POST' })
   const response = await main({
     post(e) {
@@ -274,11 +335,12 @@ tap.test(`main - methods`, async (t) => {
     },
   })(e, context)
 
-  if (!response) t.fail()
-  else t.equal(response.statusCode, 200)
+  if (!response) {
+    throw new Error('no response')
+  } else assert.equal(response.statusCode, 200)
 })
 
-tap.test(`main - not method match`, async (t) => {
+test(`main - not method match`, async () => {
   try {
     await main({
       post(e) {
@@ -288,19 +350,24 @@ tap.test(`main - not method match`, async (t) => {
       },
     })(event, context)
   } catch (e) {
-    t.equal(e.statusCode, 405)
+    assert.equal(e.statusCode, 405)
   }
 })
 
-tap.test(`stack + main`, async (t) => {
+test(`stack + main`, async () => {
+  let plan = 0
+
   const run = stack([
     main({
       post() {
-        t.pass()
+        plan++
       },
     }),
   ])
   const response = await run(event, context)
 
-  t.equal(response.statusCode, 405)
+  assert.equal(plan, 0)
+  assert.equal(response.statusCode, 405)
 })
+
+test.run()

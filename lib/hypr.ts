@@ -1,4 +1,4 @@
-import merge from 'deepmerge'
+import merge from 'deep-extend'
 import status from 'statuses'
 import { HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/functions'
 
@@ -13,10 +13,11 @@ export type BodyShorthands = {
   json?: object
   xml?: string
 }
-export type Response = HandlerResponse & BodyShorthands
+export type Response = HandlerResponse & BodyShorthands & Dictionary
 export type Handler<E = Dictionary, C = Dictionary> = (
   event: Event<E>,
-  context: Context<C>
+  context: Context<C>,
+  response?: Partial<Response>
 ) => Unsync<Partial<Response> | void>
 export type ErrorHandler = Handler<Dictionary, ContextError>
 export type HttpMethods = 'get' | 'post' | 'patch' | 'put' | 'options'
@@ -44,6 +45,10 @@ export class HttpError extends Error {
 
     if (options.headers) this.headers = options.headers
   }
+}
+
+export function createHandler<T = Dictionary>(init: (options?: T) => Handler) {
+  return init
 }
 
 export function normalizeResponse(response: Partial<Response>): HandlerResponse {
@@ -134,7 +139,7 @@ async function run(event: Event, context: Context, handlers: Handler<any, any>[]
   let response = {}
 
   for (const handler of handlers) {
-    response = merge(response, (await handler(event, context)) || {})
+    response = merge(response, (await handler(event, context, response)) || {})
   }
 
   if (!response || !Object.keys(response).length) {
@@ -170,9 +175,9 @@ export function main(handlers: Handler | { [key in HttpMethods]?: Handler }) {
         }
       : handlers
 
-  return function mainHandler(ev: Event, ctx: Context) {
-    const method = methods[ev.httpMethod.toLowerCase() as HttpMethods]
-    if (method) return method(ev, ctx)
+  return function mainHandler(event: Event, context: Context, response: Partial<Response>) {
+    const method = methods[event.httpMethod.toLowerCase() as HttpMethods]
+    if (method) return method(event, context, response)
     else throw new HttpError(405)
   }
 }
