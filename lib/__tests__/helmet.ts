@@ -1,8 +1,13 @@
-import tap from 'tap'
+import { suite } from 'uvu'
+import * as assert from 'uvu/assert'
 
 import { helmet } from '../helmet'
 
-tap.test(`helmet`, async (t) => {
+const test = suite('helmet')
+
+test(`helmet`, () => {
   const res = helmet()()
-  t.ok(res.headers)
+  assert.ok(res.headers)
 })
+
+test.run()

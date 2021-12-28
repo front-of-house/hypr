@@ -13,3 +13,5 @@ hypr.js
 hypr.d.ts
 helmet.js
 helmet.d.ts
+cookies.js
+cookies.d.ts
