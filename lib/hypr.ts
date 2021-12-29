@@ -1,19 +1,19 @@
 import merge from 'deep-extend'
 import status from 'statuses'
-import { HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/functions'
+import { Event as LambdaEvent, Context as LambdaContext, Response as LambdaResponse } from 'lambda-types'
 
-export { HandlerResponse } from '@netlify/functions'
+export { LambdaResponse }
 export type Dictionary = Record<string, any>
 export type Unsync<T> = T | Promise<T>
-export type Event<T = Dictionary> = HandlerEvent & { json?: Dictionary } & Dictionary & T
+export type Event<T = Dictionary> = LambdaEvent & { json?: Dictionary } & Dictionary & T
 export type ContextError = { error: HttpError | Error }
-export type Context<T = Dictionary> = HandlerContext & Dictionary & T
+export type Context<T = Dictionary> = LambdaContext & Dictionary & T
 export type BodyShorthands = {
   html?: string
   json?: object
   xml?: string
 }
-export type Response = HandlerResponse & BodyShorthands & Dictionary
+export type Response = LambdaResponse & BodyShorthands & Dictionary
 export type Handler<E = Dictionary, C = Dictionary> = (
   event: Event<E>,
   context: Context<C>,
@@ -51,7 +51,7 @@ export function createHandler<T = Dictionary>(init: (options?: T) => Handler) {
   return init
 }
 
-export function normalizeResponse(response: Partial<Response>): HandlerResponse {
+export function normalizeResponse(response: Partial<Response>): LambdaResponse {
   const {
     isBase64Encoded = false,
     statusCode = 200,
@@ -81,7 +81,7 @@ export function normalizeResponse(response: Partial<Response>): HandlerResponse 
       ...headers,
     },
     multiValueHeaders,
-    body: typeof responseBody === 'object' ? JSON.stringify(responseBody) : responseBody,
+    body: typeof responseBody === 'object' ? JSON.stringify(responseBody) : responseBody || '',
   }
 }
 
@@ -150,7 +150,7 @@ async function run(event: Event, context: Context, handlers: Handler<any, any>[]
 }
 
 export function stack(handlers: Handler[], errorHandlers: ErrorHandler[] = []) {
-  return async function main(event: Event, context: Context): Promise<HandlerResponse> {
+  return async function main(event: Event, context: Context): Promise<LambdaResponse> {
     const ev = enhanceEvent(event)
 
     try {

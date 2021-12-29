@@ -1,1 +1,1 @@
-export { stack, main, HttpError, Event, Context, HandlerResponse as Response } from './hypr'
+export { stack, main, HttpError, Event, Context, LambdaResponse as Response } from './hypr'

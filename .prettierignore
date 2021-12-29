@@ -13,6 +13,7 @@ pnpm-lock.yaml
 # exports
 index.js
 index.d.ts
+hypr.d.ts
 helmet.js
 helmet.d.ts
 cookies.js
