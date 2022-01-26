@@ -77,7 +77,7 @@ export function normalizeResponse(response: Partial<Response>): LambdaResponse {
     isBase64Encoded,
     statusCode,
     headers: {
-      'Content-Type': contentType,
+      'content-type': contentType,
       ...headers,
     },
     multiValueHeaders,
