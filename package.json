@@ -31,7 +31,6 @@
     "@commitlint/config-conventional": "^15.0.0",
     "@semantic-release/git": "^10.0.1",
     "@tsconfig/node12": "^1.0.9",
-    "@types/deep-extend": "^0.4.32",
     "@types/statuses": "^2.0.0",
     "c8": "^7.10.0",
     "commitlint": "^15.0.0",
@@ -46,7 +45,7 @@
     "uvu": "^0.5.2"
   },
   "dependencies": {
-    "deep-extend": "^0.6.0",
+    "deepmerge": "^4.2.2",
     "statuses": "^2.0.1",
     "sugarcookie": "^1.1.3"
   }

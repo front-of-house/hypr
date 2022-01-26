@@ -1,4 +1,4 @@
-import merge from 'deep-extend'
+import merge from 'deepmerge'
 import status from 'statuses'
 import { Event as LambdaEvent, Context as LambdaContext, Response as LambdaResponse } from 'lambda-types'
 
