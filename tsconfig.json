@@ -1,8 +1,9 @@
 {
   "extends": "@tsconfig/node12/tsconfig.json",
-  "include": ["lib/index.ts", "lib/helmet.ts", "lib/cookies.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules"],
   "compilerOptions": {
+    "lib": ["ES2015", "DOM"],
     "declaration": true,
     "declarationDir": "./"
   }

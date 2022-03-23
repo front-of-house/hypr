@@ -5,6 +5,10 @@ dist
 .nyc_output
 .pnpm*
 coverage
+demo
+/__tests__
+shared
+/lib
 
 # exports
 index.js
@@ -15,3 +19,9 @@ helmet.js
 helmet.d.ts
 cookies.js
 cookies.d.ts
+errors.js
+errors.d.ts
+cors.js
+cors.d.ts
+cors.js
+cors.d.ts
