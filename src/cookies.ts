@@ -15,9 +15,7 @@ export function parse() {
         if (/^\{/.test(ev.cookies[key])) {
           try {
             ev.cookies[key] = JSON.parse(ev.cookies[key])
-          } catch (e) {
-            ev.cookies[key] = ev.cookies[key]
-          }
+          } catch (e) {}
         }
       }
     }
@@ -29,7 +27,8 @@ export function serialize() {
     const { cookies = {} } = res
 
     const serialized = Object.keys(cookies).map((key) => {
-      const [value, options = {}] = [].concat(cookies[key])
+      const cookie = cookies[key]
+      const [value, options = {}] = Array.isArray(cookie) ? cookie : [cookie, {}]
       return sugarcookie.bake(key, typeof value === 'object' ? JSON.stringify(value) : value, options)
     })
 
@@ -39,6 +38,8 @@ export function serialize() {
         multiValueHeaders: { [headers.SetCookie]: serialized },
       })
     )
+
+    delete res.cookies
   }
 }
 

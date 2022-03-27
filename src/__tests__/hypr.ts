@@ -270,7 +270,7 @@ test('serializeBody - content-length', async () => {
       body: '20€',
     })
   )
-  assert.equal(res?.headers?.['content-length'], 5)
+  assert.equal(res?.headers?.['content-length'], '5')
 })
 
 test('base', async () => {

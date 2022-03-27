@@ -81,7 +81,6 @@ test('cookies - e2e', async () => {
   } as unknown as HyprEvent
   const context = {} as HyprContext
   const res = await stack([
-    thaw(),
     (event, ctx, response) => {
       assert.equal(event.cookies.foo, 'bar')
       plan++
@@ -96,7 +95,6 @@ test('cookies - e2e', async () => {
         },
       })
     },
-    bake(),
   ])(ev, context)
 
   assert.equal(plan, 1)

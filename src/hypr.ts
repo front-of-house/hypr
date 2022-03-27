@@ -10,6 +10,7 @@ import * as mimes from './lib/mimes'
 import { createMiddleware } from './lib/createMiddleware'
 import { normalizeEvent } from './lib/normalizeEvent'
 import { normalizeResponse } from './lib/normalizeResponse'
+import * as cookies from './cookies'
 
 const Blobbber = (() => {
   if (typeof Blob !== 'undefined') {
@@ -94,6 +95,7 @@ export function serializeBody(response: HyprResponse): LambdaResponse {
 
   const content = response.body || html || json || xml || undefined
   const body = typeof content === 'object' ? JSON.stringify(content) : content || ''
+  const headers: HyprResponse['headers'] = {}
   let contentType = response.headers ? response.headers[httpHeaders.ContentType] : undefined
 
   if (!contentType) {
@@ -103,13 +105,14 @@ export function serializeBody(response: HyprResponse): LambdaResponse {
     else contentType = mimes.text
   }
 
-  return merge(response, {
-    headers: {
-      [httpHeaders.ContentType]: contentType,
-      [httpHeaders.ContentLength]: new Blobbber([body]).size,
-    },
-    body,
-  })
+  if (body) {
+    headers[httpHeaders.ContentType] = contentType
+    headers[httpHeaders.ContentLength] = String(new Blobbber([body]).size)
+  }
+
+  // TODO expecting statusCode??
+  // @ts-ignore
+  return merge(response, { headers, body })
 }
 
 async function processHandlers<E = AnyKeyValue, C = AnyKeyValue>(
@@ -143,10 +146,20 @@ export * as methods from './lib/methods'
 export * as mimes from './lib/mimes'
 export { createMiddleware } from './lib/createMiddleware'
 
-export function redirect(code: 301 | 302 | 307 | 308, location: string): Partial<HyprResponse> {
+export function redirect(
+  code: 301 | 302 | 307 | 308,
+  location: string | HyprResponse['headers']
+): Partial<HyprResponse> {
+  const headers =
+    typeof location === 'object'
+      ? location
+      : {
+          location,
+        }
+
   return {
     statusCode: code,
-    headers: { location },
+    headers,
   }
 }
 
@@ -158,7 +171,7 @@ export function stack<E = AnyKeyValue, C = AnyKeyValue>(
     const ev = normalizeEvent<E>(event)
 
     try {
-      return await processHandlers<E, C>(ev, context, handlers)
+      return await processHandlers<E, C>(ev, context, [cookies.thaw(), ...handlers, cookies.bake()])
     } catch (e) {
       try {
         context.error = e instanceof Error ? e : new Error(String(e))

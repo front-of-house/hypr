@@ -1,3 +1,4 @@
+import * as sugarcookie from 'sugarcookie'
 import {
   Event as LambdaEvent,
   Context as LambdaContext,
@@ -23,6 +24,10 @@ export type HyprResponse = LambdaResponse &
   AnyKeyValue & {
     headers: Params
     multiValueHeaders: MultiValueParams
+  } & {
+    cookies?: {
+      [name: string]: string | AnyKeyValue | [string | AnyKeyValue, sugarcookie.Options]
+    }
   }
 
 export type HyprMiddleware<E = AnyKeyValue, C = AnyKeyValue> = (
