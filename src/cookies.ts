@@ -2,7 +2,7 @@ import merge from 'deepmerge'
 import * as sugarcookie from 'sugarcookie'
 
 import type { HyprEvent, HyprContext, HyprResponse } from './lib/types'
-import * as headers from './lib/headers'
+import * as headers from './headers'
 
 export function parse() {
   return (ev: HyprEvent, ctx: HyprContext, res: HyprResponse) => {

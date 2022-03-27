@@ -1,7 +1,7 @@
 import merge from 'deepmerge'
 
 import type { HyprEvent, HyprContext, HyprResponse } from './lib/types'
-import * as headers from './lib/headers'
+import * as headers from './headers'
 
 export function helmet() {
   return (ev: HyprEvent, ctx: HyprContext, res: HyprResponse) => {

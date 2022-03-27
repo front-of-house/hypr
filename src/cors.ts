@@ -1,5 +1,5 @@
-import * as headers from './lib/headers'
-import * as methods from './lib/methods'
+import * as headers from './headers'
+import * as methods from './methods'
 import { createMiddleware } from './lib/createMiddleware'
 
 function join(value: string | string[]) {

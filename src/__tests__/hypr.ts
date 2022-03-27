@@ -5,7 +5,7 @@ import status from 'statuses'
 import { stack, main, errorHandler, HyprContext, serializeBody, HttpError, HyprEvent } from '../hypr'
 import { normalizeEvent } from '../lib/normalizeEvent'
 import { normalizeResponse } from '../lib/normalizeResponse'
-import * as httpHeaders from '../lib/headers'
+import * as httpHeaders from '../headers'
 
 const test = suite('hypr')
 

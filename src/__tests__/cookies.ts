@@ -4,7 +4,7 @@ import * as assert from 'uvu/assert'
 import { stack, HyprEvent, HyprContext } from '../hypr'
 import { normalizeEvent } from '../lib/normalizeEvent'
 import { normalizeResponse } from '../lib/normalizeResponse'
-import * as headers from '../lib/headers'
+import * as headers from '../headers'
 import { thaw, bake, parse, serialize } from '../cookies'
 
 const test = suite('cookies')

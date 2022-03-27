@@ -4,9 +4,9 @@ import { Response as LambdaResponse } from 'lambda-types'
 
 import type { AnyKeyValue, HyprEvent, HyprContext, HyprResponse, HyprMiddleware, HyprHandler } from './lib/types'
 
-import * as methods from './lib/methods'
-import * as httpHeaders from './lib/headers'
-import * as mimes from './lib/mimes'
+import * as methods from './methods'
+import * as httpHeaders from './headers'
+import * as mimes from './mimes'
 import { createMiddleware } from './lib/createMiddleware'
 import { normalizeEvent } from './lib/normalizeEvent'
 import { normalizeResponse } from './lib/normalizeResponse'
@@ -144,9 +144,9 @@ async function processHandlers<E = AnyKeyValue, C = AnyKeyValue>(
  */
 
 export { HyprEvent, HyprContext, HyprResponse } from './lib/types'
-export * as headers from './lib/headers'
-export * as methods from './lib/methods'
-export * as mimes from './lib/mimes'
+export * as headers from './headers'
+export * as methods from './methods'
+export * as mimes from './mimes'
 export { createMiddleware } from './lib/createMiddleware'
 
 export function redirect(

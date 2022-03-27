@@ -1,8 +1,8 @@
 import { suite } from 'uvu'
 import * as assert from 'uvu/assert'
 
-import * as headers from '../lib/headers'
-import * as methods from '../lib/methods'
+import * as headers from '../headers'
+import * as methods from '../methods'
 import { cors } from '../cors'
 import { HyprEvent, HyprContext } from '../hypr'
 import { normalizeResponse } from '../lib/normalizeResponse'

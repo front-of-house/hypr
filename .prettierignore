@@ -26,3 +26,9 @@ errors.js
 errors.d.ts
 cors.js
 cors.d.ts
+methods.js
+methods.d.ts
+headers.js
+headers.d.ts
+mimes.js
+mimes.d.ts
