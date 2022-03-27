@@ -30,11 +30,13 @@ export type HyprResponse = LambdaResponse &
     }
   }
 
-export type HyprMiddleware<E = AnyKeyValue, C = AnyKeyValue> = (
+export type HyprMiddleware<E = AnyKeyValue, C = AnyKeyValue> = {
+  __main__?: boolean
+} & ((
   event: HyprEvent<E>,
   context: HyprContext<C>,
   response: HyprResponse
-) => Unsync<Partial<HyprResponse> | void>
+) => Unsync<Partial<HyprResponse> | void>)
 
 export type HyprHandler<E = AnyKeyValue, C = AnyKeyValue> = (
   event: HyprEvent<E>,

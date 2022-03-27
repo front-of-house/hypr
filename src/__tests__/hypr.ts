@@ -313,7 +313,7 @@ test('response passing', async () => {
   assert.equal(response.statusCode, 201)
 })
 
-test('exit early', async () => {
+test('will not exit early', async () => {
   const run = stack([
     (ev, ctx, res) => {
       res.headers['Host'] = 'foo'
@@ -330,8 +330,31 @@ test('exit early', async () => {
 
   const response = await run(event, context)
 
-  assert.equal(response.statusCode, 302)
+  assert.equal(response.statusCode, 201)
   assert.equal(response.headers?.host, 'foo')
+})
+
+test('if early response, skips main', async () => {
+  const run = stack([
+    (ev, ctx, res) => {
+      return {
+        statusCode: 302,
+      }
+    },
+    main((ev, ctx) => {
+      return {
+        statusCode: 201,
+      }
+    }),
+    (ev, ctx, res) => {
+      res.headers['x-test'] = 'foo'
+    }
+  ])
+
+  const response = await run(event, context)
+
+  assert.equal(response.statusCode, 302)
+  assert.equal(response.headers?.['x-test'], 'foo')
 })
 
 test('headers get normalized on the way', async () => {

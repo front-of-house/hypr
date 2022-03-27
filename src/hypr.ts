@@ -121,13 +121,16 @@ async function processHandlers<E = AnyKeyValue, C = AnyKeyValue>(
   handlers: HyprMiddleware<E, C>[]
 ) {
   let response = normalizeResponse({})
+  let hasEarlyResponse = false
 
   for (const handler of handlers) {
+    if (hasEarlyResponse && handler.__main__) continue
+
     const early = await handler(event, context, response)
 
     if (early) {
-      response = normalizeResponse(merge(response, early))
-      break
+      Object.assign(response, merge(response, early))
+      hasEarlyResponse = true
     }
 
     response = normalizeResponse(response)
@@ -190,7 +193,7 @@ export function stack<E = AnyKeyValue, C = AnyKeyValue>(
 
 export function main<E = AnyKeyValue, C = AnyKeyValue>(
   handlers: HyprHandler<E, C> | Partial<Record<methods.Methods, HyprHandler<E, C>>>
-) {
+): HyprMiddleware<E, C> {
   const methods: Partial<Record<methods.Methods, HyprHandler<E, C>>> =
     typeof handlers === 'function'
       ? {
@@ -212,7 +215,7 @@ export function main<E = AnyKeyValue, C = AnyKeyValue>(
     }
   }
 
-  return createMiddleware<E, C>(async (event, context, response) => {
+  const handler = createMiddleware<E, C>(async (event, context, response) => {
     const method = methods[event.httpMethod.toLowerCase() as methods.Methods]
     const allow = Object.keys(methods)
       .map((s) => s.toUpperCase())
@@ -227,4 +230,8 @@ export function main<E = AnyKeyValue, C = AnyKeyValue>(
       })
     }
   })
+
+  handler.__main__ = true
+
+  return handler
 }
