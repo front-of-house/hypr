@@ -75,7 +75,7 @@ export function stack<E = AnyKeyValue, C = AnyKeyValue>(
         return await processHandlers<E, C>(
           ev,
           context,
-          errorHandlers.length ? [handleError, ...errorHandlers] : [handleError]
+          errorHandlers.length ? [handleError, ...errorHandlers, cookies.bake()] : [handleError, cookies.bake()]
         )
       } catch (e) {
         context.error = e instanceof Error ? e : new Error(String(e))
