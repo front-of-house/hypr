@@ -1,6 +1,6 @@
 {
   "name": "hypr",
-  "version": "2.4.2",
+  "version": "2.5.0-beta.1",
   "description": "A different approach to serverless middleware.",
   "main": "./hypr.js",
   "types": "hypr.d.ts",
