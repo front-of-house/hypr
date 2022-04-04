@@ -6,19 +6,17 @@ import type { AnyKeyValue, HyprEvent, HyprContext, HyprResponse, HyprMiddleware,
 
 import * as methods from './methods'
 import * as httpHeaders from './headers'
-import * as mimes from './mimes'
 import { createMiddleware } from './lib/createMiddleware'
 import { normalizeEvent } from './lib/normalizeEvent'
-import { normalizeResponse } from './lib/normalizeResponse'
+import { processHandlers } from './lib/processHandlers'
+import { handleError } from './lib/handleError'
 import * as cookies from './cookies'
 
-const Blobbber = (() => {
-  if (typeof Blob !== 'undefined') {
-    return Blob
-  } else {
-    return require('buffer').Blob
-  }
-})() as typeof Blob
+export { HyprEvent, HyprContext, HyprResponse } from './lib/types'
+export * as headers from './headers'
+export * as methods from './methods'
+export * as mimes from './mimes'
+export { createMiddleware } from './lib/createMiddleware'
 
 export class HttpError extends Error {
   statusCode: HyprResponse['statusCode']
@@ -44,110 +42,6 @@ export class HttpError extends Error {
     if (options.headers) this.headers = options.headers
   }
 }
-
-export const errorHandler = createMiddleware((event, context, response) => {
-  let statusCode = 500
-  let message
-  let headers = {}
-  let expose = false
-
-  if (context.error instanceof HttpError) {
-    statusCode = context.error.statusCode
-    message = context.error.message || message
-    headers = context.error.headers || headers
-    expose = context.error.expose
-  } else if (context.error instanceof Error) {
-    message = context.error.message
-  }
-
-  if (!expose || !message) {
-    message = status.message[statusCode]
-  }
-
-  const res: Partial<HyprResponse> = {
-    statusCode,
-    headers,
-  }
-
-  const accept = event.headers[httpHeaders.Accept] || ''
-
-  if (accept.includes('json')) {
-    res.json =
-      typeof message === 'object'
-        ? message
-        : {
-            detail: message,
-          }
-  } else if (accept.includes('html')) {
-    res.html = `<h1>${message}</h1>`
-  } else {
-    res.body = String(message)
-  }
-
-  Object.assign(response, merge(response, res))
-})
-
-/**
- * Final handler
- */
-export function serializeBody(response: HyprResponse): LambdaResponse {
-  const { html = undefined, json = undefined, xml = undefined } = response
-
-  const content = response.body || html || json || xml || undefined
-  const body = typeof content === 'object' ? JSON.stringify(content) : content || ''
-  const headers: HyprResponse['headers'] = {}
-  let contentType = response.headers ? response.headers[httpHeaders.ContentType] : undefined
-
-  if (!contentType) {
-    if (!!html) contentType = mimes.html
-    else if (!!json) contentType = mimes.json
-    else if (!!xml) contentType = mimes.xml
-    else contentType = mimes.text
-  }
-
-  if (body) {
-    headers[httpHeaders.ContentType] = contentType
-    headers[httpHeaders.ContentLength] = String(new Blobbber([body]).size)
-  }
-
-  // TODO expecting statusCode??
-  // @ts-ignore
-  return merge(response, { headers, body })
-}
-
-async function processHandlers<E = AnyKeyValue, C = AnyKeyValue>(
-  event: HyprEvent<E>,
-  context: HyprContext<C>,
-  handlers: HyprMiddleware<E, C>[]
-) {
-  let response = normalizeResponse({})
-  let hasEarlyResponse = false
-
-  for (const handler of handlers) {
-    if (hasEarlyResponse && handler.__main__) continue
-
-    const early = await handler(event, context, response)
-
-    if (early) {
-      Object.assign(response, merge(response, early))
-      hasEarlyResponse = true
-    }
-
-    response = normalizeResponse(response)
-  }
-
-  return serializeBody(response)
-}
-
-/**
- * Main exports
- */
-
-export { HyprEvent, HyprContext, HyprResponse } from './lib/types'
-export * as headers from './headers'
-export * as methods from './methods'
-export * as mimes from './mimes'
-export { createMiddleware } from './lib/createMiddleware'
 
 export function redirect(
   code: 301 | 302 | 307 | 308,
@@ -181,11 +75,11 @@ export function stack<E = AnyKeyValue, C = AnyKeyValue>(
         return await processHandlers<E, C>(
           ev,
           context,
-          errorHandlers.length ? [errorHandler, ...errorHandlers] : [errorHandler]
+          errorHandlers.length ? [handleError, ...errorHandlers] : [handleError]
         )
       } catch (e) {
         context.error = e instanceof Error ? e : new Error(String(e))
-        return await processHandlers<E, C>(ev, context, [errorHandler])
+        return await processHandlers<E, C>(ev, context, [handleError])
       }
     }
   }
