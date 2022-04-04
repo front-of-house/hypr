@@ -89,6 +89,7 @@ export function main<E = AnyKeyValue, C = AnyKeyValue>(
   handlers: HyprHandler<E, C> | Partial<Record<methods.Methods, HyprHandler<E, C>>>
 ): HyprMiddleware<E, C> {
   const methods: Partial<Record<methods.Methods, HyprHandler<E, C>>> =
+    // TODO function should just allow any method
     typeof handlers === 'function'
       ? {
           get: handlers,

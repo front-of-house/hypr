@@ -1,11 +1,11 @@
 import merge from 'deepmerge'
 import * as sugarcookie from 'sugarcookie'
 
-import type { HyprEvent, HyprContext, HyprResponse } from './lib/types'
 import * as headers from './headers'
+import { createMiddleware } from './lib/createMiddleware'
 
 export function parse() {
-  return (ev: HyprEvent, ctx: HyprContext, res: HyprResponse) => {
+  return createMiddleware((ev, ctx, res) => {
     ev.cookies = {}
 
     if (ev.headers.cookie) {
@@ -19,11 +19,11 @@ export function parse() {
         }
       }
     }
-  }
+  })
 }
 
 export function serialize() {
-  return (ev: HyprEvent, ctx: HyprContext, res: HyprResponse) => {
+  return createMiddleware((ev, ctx, res) => {
     const { cookies = {} } = res
 
     const serialized = Object.keys(cookies).map((key) => {
@@ -40,7 +40,7 @@ export function serialize() {
     )
 
     delete res.cookies
-  }
+  })
 }
 
 export const thaw = parse
