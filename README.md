@@ -138,6 +138,40 @@ const isAuthenticated = hypr.createMiddleware(async (ev, ctx, res) => {
 })
 ```
 
+### Cookies
+
+Cookies are automatically deserialized and attached to `event.cookies`. To set
+cookies, define them on the `cookies` property of your response object:
+
+```typescript
+import { stack, main } from 'hypr'
+
+export const handler = stack([
+  main((event) => {
+    const { session_id } = event.cookies
+    const { id, expiresAt } = refreshSession(session_id)
+
+    return {
+      statusCode: 204,
+      // create cookies via the response object
+      cookies: {
+        // shorthand, no options
+        cookie_name: 'value',
+        // with options
+        session_id: [
+          id,
+          {
+            expires: expiresAt,
+            secure: true,
+            httpOnly: true,
+          },
+        ],
+      },
+    }
+  }),
+])
+```
+
 ## API
 
 ### `stack`
@@ -265,41 +299,17 @@ console.log(mimes.json) // application/json; charset=utf-8
 
 Hypr ships with a couple of handy middleware.
 
-### Cookies
-
-Parse and serialize cookies using
-[sugarcookie](https://github.com/sure-thing/sugarcookie). `thaw` and `bake` are
-just aliases for `parse` and `serialize` exports.
+### CORS
 
 ```typescript
 import { stack, main } from 'hypr'
-import { thaw, bake } from 'hypr/cookies'
+import { cors } from 'hypr/cors'
 
 export const handler = stack([
-  thaw(),
-  main((event) => {
-    const { session_id } = event.cookies
-    const { id, expiresAt } = refreshSession(session_id)
-
-    return {
-      statusCode: 204,
-      // create cookies via the response object
-      cookies: {
-        // shorthand, no options
-        cookie_name: 'value',
-        // with options
-        session_id: [
-          id,
-          {
-            expires: expiresAt,
-            secure: true,
-            httpOnly: true,
-          },
-        ],
-      },
-    }
+  main(...),
+  cors({
+    allowedOrigin: 'https://sure-thing.net'
   }),
-  bake(),
 ])
 ```
 
